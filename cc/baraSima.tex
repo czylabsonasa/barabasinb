@@ -1,0 +1,108 @@
+%\documentclass[14pt]{article}
+\documentclass[14pt]{extarticle}
+
+\usepackage[margin=1.5cm,nohead]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[hungarian]{babel}
+\usepackage[%hypertex,
+                 unicode=true,
+                 plainpages = false, 
+                 pdfpagelabels, 
+                 bookmarks=true,
+                 bookmarksnumbered=true,
+                 bookmarksopen=true,
+                 breaklinks=true,
+                 backref=false,
+                 colorlinks=true,
+                 linkcolor = blue,
+                 urlcolor  = blue,
+                 citecolor = red,
+                 anchorcolor = green,
+                 hyperindex = true,
+                 hyperfigures
+]{hyperref}
+\hypersetup{
+ pdftitle={Barabasi},
+ pdfauthor={Czylabson Asa},
+ pdfsubject={Hold Föld Nap}
+}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{type1cm}
+
+\usepackage{setspace}
+\onehalfspacing
+
+\newcommand{\zjel}[1]{%
+{ \left( #1 \right) }
+}
+
+\begin{document}
+\begin{spacing}{1.5}
+
+	\par\centerline{Barabási dallam}
+
+	\begin{itemize}
+		\item néha az $=$ helyett $\approx$ értendő
+
+		\item $t=0$ a kezdő pillanat, ekkor az összfokszám: $d_{0}$. A csucsok száma
+		$v_{0}\ge m.$ 
+		\begin{itemize}
+			\item a kezdő lehet pl. egy teljes $m+1$ gráf, ekkor $d_{0}=(m+1)m$, 
+			\newline ezzel kényelmes "dolgozni", mert az első lépés megtehető és 
+			nem determinisztikus.
+		\end{itemize}
+
+		\item $d_{t}$ az összfokszám a $t$ pillanatban
+		\begin{itemize}
+			\item minden lépésben létrejön $m$ új él, ami $2m$ fokszámnövekedés:
+			\newline $d_{t}=d_{0}+t2m$. 
+		\end{itemize}
+		\item $d_{t}(d)$ a $t$ pillanatban a $d$ fokúak száma.
+		\item először $d_{t}(m)$-et nézzük:
+		\begin{itemize}
+			\item $d_{0}(m),d_{0}(m-1)$ adott.
+
+			\item $d_{t+1}(m)=d_{t}(m)+1+X-Y$, ahol $X$ a keletkező, $Y$ a megszűnő $m$ fokúak véletlentől függő száma.
+
+%bin 
+			\item {\it Hanyagoljuk} el egyrészt a régi csúcsok választási lépéseinek, másrészt az $X,Y$ párnak a függőségét:
+			\newline $X$-el $Bin\zjel{m,\frac{(m-1)d_{t}(m-1)}{d_{t}}}$-ként, 
+         \newline $Y$-al $Bin\zjel{m,\frac{md_{t}(m)}{d_{t}}}$-ként dolgozunk tovább.
+
+
+%atlagok
+			\item {\it Átlagokra} áttérve (ide kellene egy feltételes várható értékes kitérő):
+			\newline $\overline{{d}_{t+1}(m)}=\overline{{d}_{t}(m)}+1+
+         \frac{m(m-1)\overline{{d}_{t}(m-1)}}{d_{t}}-\frac{m^{2}\overline{{d}_{t}(m)}}{d_{t}}$
+         \newline a $\frac{(m-1)\overline{{d}_{t}(m-1)}}{d_{t}}$ tagot elhanyagoljuk, mivel az $m-1$ 
+         fokú csúcsok száma nem nő és $d_{{t}}\uparrow\infty:$
+         \newline $\overline{{d}_{t+1}(m)}=\overline{{d}_{t}(m)}+1-\frac{m\overline{{d}_{t}(m)}}{d_{t}}$
+%egyensuly
+			\item Feltételezzük, hogy a gráf közel {\it egyensúlyi helyzet}be "kerül" nagy $t$-re, és 
+			\newline ezt $\overline{d_{t}(m)}=c_{m}d_{t}$-vel fejezzük ki. Ekkor
+			\newline $c_{m}2m=1-m^{2}c_{m}$, azaz  
+			$c_{m}=\frac{1}{m(m+2)}.$
+
+		\end{itemize}
+		\item $d_{t}(d)$ $d>m$-re:
+		\begin{itemize}
+			\item $d_{t+1}(d)=d_{t}(d)+X-Y$, ahol $X$ az éppen keletkező $d$-fokúakat, 
+			$Y$ a megszűnőket számolja.
+			\newline Itt is $X$-et $Bin\zjel{m,\frac{(d-1)d_{t}(d-1)}{d_{t}}}$-nel 
+         \newline illetve $Y$-t $Bin\zjel{m,\frac{dd_{t}(d)}{d_{t}}}$-nel helyettesítjük,
+         \newline átlagolunk, és reménykedünk az $\overline{d_{t}(d)}=c_{d}d_{t}$ 
+         "egyensúlyban":
+         \newline
+			$\overline{{d}_{t+1}(d)}=\overline{{d}_{t}(d)}+
+         \frac{m(d-1)\overline{{d}_{t}(d-1)}}{d_{t}}-\frac{md\overline{{d}_{t}(d)}}{d_{t}}$			
+         \newline $c_{d}2m=m(d-1)c_{d-1}-mdc_{d}$, azaz 
+         $c_{d}=\frac{d-1}{d+2}c_{d-1}.$
+		\end{itemize}
+	\end{itemize}
+
+
+\end{spacing}
+\end{document}
