@@ -1,2 +1,5 @@
 *.dat
 *.bin
+octave-workspace
+.RData
+.Rhistory
