@@ -1,16 +1,36 @@
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
-#define _DEBUG( x )
+#include <vector>
+#include <chrono>
+#include <algorithm>
+using namespace std;
+
+using namespace chrono;
+time_point<steady_clock> start;
+double tik(int f=0){
+   if(0==f)
+   {
+      start=steady_clock::now();
+      return (-1.0);
+   }
+   else
+   {
+      duration<double> diff=steady_clock::now()-start;
+      return diff.count();
+   }
+}
+double tak(){
+   return tik(1);
+}
+
 
 int const M(8);//elmeleti max a kis m-re
 
 struct{
    int m; // ennyi régi csúcshoz kapcsolódik az új 
-   int lepes ; // ennyi új csűcs "keletkezik"
-   int* lista=nullptr; // aka NULL,0
-   int* fokszam=nullptr;
-   int* gyakorisag=nullptr;
+   int max_step ; // ennyi új csűcs "keletkezik"
+   vector<int> lista;
    int nlista; // a lista aktualis merete
    int ncsucs;
    int d0;//kezdograf fokszama
@@ -40,7 +60,6 @@ struct{
    void kezdograf(){//kezdo graf: egy teljes m+1 graf + nullazas
       nlista=0;
       for(int i=1;i<=m+1;i++){
-         fokszam[i]=m;
          for(int j=1;j<=m;j++){
             lista[++nlista]=i;
          }
@@ -56,105 +75,56 @@ struct{
          int jelolt=huz();
          if(true==kicsilista.keres(jelolt)){++v;}      
       }
-_DEBUG(
-   for(int v=0;v<m;v++){
-      printf( "%d " , kicsilista[v] ) ;
-   }
-   printf("\n")
-) ;
+
       // osszekotes, listaba berakas
-      fokszam[++ncsucs]=m;
-      for(int v=0;v<m;v++)
-      {
+      for(int v=0;v<m;v++){
          lista[++nlista]=ncsucs;
          lista[++nlista]=kicsilista[v];
-         ++fokszam[kicsilista[v]];
       }
       
    }//egylepes()
 
-   void init(){
-      lista = new int[ m*(m+1) + 2*m*lepes + 7 ] ; // lista[1..nlista] a csucsokat tartalmazza fokszam-szor
-      fokszam = new int[ m + 1 + lepes + 7 ] ; // fokszam[i] az i-es csucs fokszama
-      gyakorisag = new int[ m + 1 + lepes + 7 ] ; // gyakorisag[f] az f-fokszam gyakorisaga
-      // elmeletileg a max fokszam = m+lepes, ha a kezdeti graf egy csucsat minden lepesben valasztja
+   void init(int _m,int _max_step){
+      m=_m;
+      max_step=_max_step;
+      lista=vector<int>(m*(m+1) + 2*m*max_step + 7);
    }//init()
 
-   void eloszlas(){
-      int maxfok=0;
-      for(int i=1;i<=ncsucs;i++){
-         if(fokszam[i]>maxfok){maxfok=fokszam[i];}
+   void gen(int n_step){
+      kezdograf();
+      for(int s=1;s<=n_step;s++){
+         egylepes() ;
       }
-      // eloszlas nullaz
-
-fprintf(stderr,"ncsucs:%d\n",ncsucs) ;
-fprintf(stderr,"maxfok:%d\n",maxfok) ;
-
-      for(int f=m;f<=maxfok;f++){
-         gyakorisag[f]=0;
-      }
-      // fokszamok kigyujtese
-      for(int i=1;i<=ncsucs;i++){
-         ++gyakorisag[fokszam[i]];
-      }
-      
-   //return 0 ;
-      // kiiras, a rekurziot is szamolja
-      char outnev[64];
-      sprintf(outnev,"bar_m%d_lepes%d",m,lepes);
-      FILE*fout=fopen(outnev,"w");
-int sum=0;
-      double delta=0;
-      double dlepes=d0+lepes*2*m;
-      double cd=1.0/(m*(2.0+m));
-      for(int d=m;d<=maxfok;d++){
-         double rgy=gyakorisag[d]/double(dlepes);//ncsucs?
-         delta+=(rgy-cd)*(rgy-cd);
-         if(gyakorisag[d]>0){
-            fprintf(fout,"%d %.12lf %.12lf\n",d,rgy,cd);
-sum+=gyakorisag[d];
-//fprintf(stderr,"%lf\n",gyakorisag[d]/double(ncsucs));
-         }
-         cd=d*cd/double(d+3);
-      }//for(d)
-      fclose(fout);
-fprintf(stderr,"sum=%d\n",sum);
-fprintf(stderr,"delta2=%.15lf\n",delta);
-
-      // kiirja az m,lepest az mkrajz-ba
-      fout=fopen("mkrajz","w");
-      fprintf(fout,"cat alap.gp|sed s/_m/%d/|sed s/_lepes/%d/|sed s/_akt/%s/>%s.gp;gnuplot %s.gp",m,lepes,outnev,outnev,outnev);
-      fclose(fout);
-
-   }// eloszlas()
-
-   void mfree(){// a lefoglalt tombok felszabaditasa
-      delete[] lista;
-      delete[] fokszam;
-      delete[] gyakorisag;
-   }//mfree()
-   
-
+   }
 } barabasi;
 
 
 int main(){
-   int& m(barabasi.m);
-   int& n_step(barabasi.lepes);
-	int max_step=1000000;
-	int rep=3;
-
-
 	srand(time(NULL));
-	while(n_step<max_step){
-	   barabasi.init();
 
-		barabasi.kezdograf();
-		for(int l=1;l<=n_step;l++){
-			barabasi.egylepes() ;
-		}
+   int m=3;
+   int n_step=10;
+   int max_step=100000;
+   double q=1.5;
+   int n_rep=3;
+   FILE* f=fopen("result.dat","w");  
 
-   barabasi.mfree();
-	
+   while(n_step<max_step){
+      barabasi.init(m,n_step);
+      double best=0;
+      for(int i=0;i<n_rep;i++){
+         tik();
+         barabasi.gen(n_step);
+         double st=tak();
+         if(i==0){
+            best=st;
+         }else{
+            best=std::max(best,st);
+         }
+      }
+      fprintf(f,"%d %d %lf cc\n",m,n_step,best);
+      n_step=int(q*n_step);
+   }
+   fclose(f);
 	return 0 ;
 }
