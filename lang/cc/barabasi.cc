@@ -104,7 +104,7 @@ int main(){
 
    int m=3;
    int n_step=10;
-   int max_step=100000;
+   int max_step=10000000;
    double q=1.5;
    int n_rep=3;
    FILE* f=fopen("result.dat","w");  
